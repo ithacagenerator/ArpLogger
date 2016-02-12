@@ -68,10 +68,13 @@ var arpMonitor = require("arp-monitor")();
 // 50 seconds after every ARP ping, the active clients table is reported
 // via this update event, so it may take a couple of minutes for
 // a new device to be detected or an absent device to drop off
+// you won't get the first report until 50 seconds after the app starts
 arpMonitor.on("update", function(activeClients) {
+  var macs = Object.keys(activeClients);
   var obj = {
-    macs: Object.keys(activeClients),
-    timestamp: moment().format()
+    timestamp: moment().format(),
+    macCount: macs.length,
+    macs: macs
   };
 
   // right now log the object to the console
