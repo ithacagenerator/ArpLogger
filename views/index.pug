@@ -3,3 +3,14 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
+
+  h2 Unique MAC addresses within ...
+  ul 
+    li Last Hour: #{uniqueMACs_1hr}
+    li Last Day: #{uniqueMACs_1day}  
+    li Last Week: #{uniqueMACs_1wk}  
+    li Last 1 Month: #{uniqueMACs_1mo}  
+    li Last 3 Months: #{uniqueMACs_3mo}
+    li Last 6 Months: #{uniqueMACs_6mo}
+    li Last Year: #{uniqueMACs_1yr}
+    li ResultSet: #{resultSet}
