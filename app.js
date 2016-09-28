@@ -7,6 +7,8 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 
+var MongoClient = require("mongodb").MongoClient;
+
 var app = express();
 
 // view engine setup
@@ -76,6 +78,25 @@ arpMonitor.on("update", function(activeClients) {
     macCount: macs.length,
     macs: macs
   };
+
+  var insertDocument = (db, doc, callback) => {
+    console.log("Inserting document");
+    var collection = db.collection('arp_reports');
+    collection.insert(doc, (err, result) => {
+      console.log("Document Inserted");
+      callback(result);
+    });
+  };
+
+  var url = 'mongodb://localhost:27017/arplogger';
+  console.log("Connecting to Database");
+  MongoClient.connect(url, (err, db) => {
+    console.log("Connected to Database");
+    insertDocument(db, obj, () => {
+      console.log("Closing Database Connection");
+      db.close();
+    });
+  });
 
   // right now log the object to the console
   // ultimately append it to a file or something
