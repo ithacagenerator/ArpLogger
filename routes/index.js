@@ -1,5 +1,5 @@
-var expressPromiseRouter = require("express-promise-router");
-var router = expressPromiseRouter();
+var express = require('express');
+var router = express();
 var Promise = require("bluebird");
 
 /* GET home page. */
