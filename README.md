@@ -28,6 +28,10 @@ npm install
 sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install mongodb-server
+# the above line doesn't work anymore....
+# so I kind of followed these instructions instead
+# https://andyfelong.com/2016/01/mongodb-3-0-9-binaries-for-raspberry-pi-2-jessie/
+
 sudo service mongod start
 
 # register the mongo script to start / repair mongo at startup
