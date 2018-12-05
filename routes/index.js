@@ -6,7 +6,7 @@ var MongoDB = Promise.promisifyAll(require("mongodb"));
 var MongoClient = MongoDB.MongoClient;
 var moment = require("moment");
 var arplogger_config = require('../config');
-
+console.log(config);
 
 if(!arplogger_config.serverRoutes_enabled) {
   console.log('hosting routes');
