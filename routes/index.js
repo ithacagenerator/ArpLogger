@@ -9,6 +9,8 @@ var arplogger_config = require('../config');
 
 
 if(!arplogger_config.serverRoutes_enabled) {
+  console.log('hosting routes');
+
   var findDocuments = (db, earliestDate, latestDate) => {
     var collection = db.collection('arp_reports');
     var earlyquery = {timestamp: {$gt: earliestDate}};
