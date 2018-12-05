@@ -1,9 +1,16 @@
+// jshint esversion: 6
 var express = require('express');
 var router = express();
 var Promise = require("bluebird");
 var MongoDB = Promise.promisifyAll(require("mongodb"));
 var MongoClient = MongoDB.MongoClient;
 var moment = require("moment");
+var arplogger_config = require('../config');
+
+
+if(!arplogger_config.serverRoutes_enabled) {
+  return;
+}
 
 var findDocuments = (db, earliestDate, latestDate) => {
   var collection = db.collection('arp_reports');
@@ -99,6 +106,30 @@ router.get('/', function(req, res) {
   }).catch((error) => {
     res.json({stack: error.stack, message: error.message});
   });
+});
+
+router.post('/', function(req, res) {
+  const reports = req.body;
+  if(reports.timestamp) {
+    let insertDocument = (db, doc, callback) => {
+      console.log("Inserting document");
+      var collection = db.collection('arp_reports');
+      collection.insert(doc, (err, result) => {
+        console.log("Document Inserted");
+        callback(result);
+      });
+    };
+  
+    let url = 'mongodb://localhost:27017/arplogger';
+    console.log("Connecting to Database");
+    MongoClient.connect(url, (err, db) => {
+      console.log("Connected to Database");
+      insertDocument(db, reports, () => {
+        console.log("Closing Database Connection");
+        db.close();
+      });
+    });    
+  }
 });
 
 module.exports = router;

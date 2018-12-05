@@ -1,11 +1,13 @@
+// jshint esversion: 6
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
+var arplogger_config = require('./config');
 var routes = require('./routes/index');
+var rp = require('request-promise');
 
 var MongoClient = require("mongodb").MongoClient;
 
@@ -79,24 +81,43 @@ arpMonitor.on("update", function(activeClients) {
     macs: macs
   };
 
-  var insertDocument = (db, doc, callback) => {
-    console.log("Inserting document");
-    var collection = db.collection('arp_reports');
-    collection.insert(doc, (err, result) => {
-      console.log("Document Inserted");
-      callback(result);
+  if(arplogger_config.localMongo_enabled) {
+    var insertDocument = (db, doc, callback) => {
+      console.log("Inserting document");
+      var collection = db.collection('arp_reports');
+      collection.insert(doc, (err, result) => {
+        console.log("Document Inserted");
+        callback(result);
+      });
+    };
+  
+    var url = 'mongodb://localhost:27017/arplogger';
+    console.log("Connecting to Database");
+    MongoClient.connect(url, (err, db) => {
+      console.log("Connected to Database");
+      insertDocument(db, obj, () => {
+        console.log("Closing Database Connection");
+        db.close();
+      });
     });
-  };
+  }
 
-  var url = 'mongodb://localhost:27017/arplogger';
-  console.log("Connecting to Database");
-  MongoClient.connect(url, (err, db) => {
-    console.log("Connected to Database");
-    insertDocument(db, obj, () => {
-      console.log("Closing Database Connection");
-      db.close();
-    });
-  });
+  if(arplogger_config.remoteServer_enabled) {
+    let options = {
+      method: 'POST',
+      uri: arplogger_config.remoteServer_url,
+      body: obj,
+      json: true // Automatically stringifies the body to JSON
+    };
+  
+    rp(options)
+      .then(function (parsedBody) {
+        console.log('posted to remote server');
+      })
+      .catch(function (err) {
+        console.log('failed to post to remote server', err.message, err.stack);
+      });
+  }
 
   // right now log the object to the console
   // ultimately append it to a file or something

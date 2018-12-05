@@ -11,18 +11,20 @@
     "angular-aria": "^1.5.8",
     "angular-material": "^1.1.1",
     "arp-monitor": "^0.1.1",
-    "request": "^2.75.0",
     "bluebird": "^3.4.6",
     "body-parser": "^1.15.2",
     "bootstrap": "^3.3.7",
     "cookie-parser": "^1.4.3",
     "debug": "^2.2.0",
     "express": "^4.14.0",
-    "pug": "^2.0.0-beta6",
+    "homedir": "^0.6.0",
     "jquery": "^3.1.1",
     "moment": "^2.15.1",
     "mongodb": "^2.2.10",
     "morgan": "^1.7.0",
+    "pug": "^2.0.0-beta6",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
     "serve-favicon": "^2.3.0"
   }
 }
