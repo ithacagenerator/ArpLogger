@@ -8,7 +8,7 @@ var moment = require("moment");
 var arplogger_config = require('../config');
 console.log(arplogger_config);
 
-if(!arplogger_config.serverRoutes_enabled) {
+if(arplogger_config.serverRoutes_enabled) {
   console.log('hosting routes');
 
   var findDocuments = (db, earliestDate, latestDate) => {
