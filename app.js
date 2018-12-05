@@ -66,66 +66,72 @@ app.use(function(err, req, res, next) {
 
 // kick off the polling notifier thing
 var moment = require('moment');
-var arpMonitor = require("arp-monitor")();
 
-// once per minute an ARP ping gets sent out
-// 50 seconds after every ARP ping, the active clients table is reported
-// via this update event, so it may take a couple of minutes for
-// a new device to be detected or an absent device to drop off
-// you won't get the first report until 50 seconds after the app starts
-arpMonitor.on("update", function(activeClients) {
-  var macs = Object.keys(activeClients);
-  var obj = {
-    timestamp: moment().format(),
-    macCount: macs.length,
-    macs: macs
-  };
+if(arplogger_config.arpListener){
+  console.log('monitoring arp');
 
-  if(arplogger_config.localMongo_enabled) {
-    var insertDocument = (db, doc, callback) => {
-      console.log("Inserting document");
-      var collection = db.collection('arp_reports');
-      collection.insert(doc, (err, result) => {
-        console.log("Document Inserted");
-        callback(result);
-      });
+  const arpMonitor = require("arp-monitor")();
+
+  // once per minute an ARP ping gets sent out
+  // 50 seconds after every ARP ping, the active clients table is reported
+  // via this update event, so it may take a couple of minutes for
+  // a new device to be detected or an absent device to drop off
+  // you won't get the first report until 50 seconds after the app starts
+  arpMonitor.on("update", function(activeClients) {
+    var macs = Object.keys(activeClients);
+    var obj = {
+      timestamp: moment().format(),
+      macCount: macs.length,
+      macs: macs
     };
   
-    var url = 'mongodb://localhost:27017/arplogger';
-    console.log("Connecting to Database");
-    MongoClient.connect(url, (err, db) => {
-      console.log("Connected to Database");
-      insertDocument(db, obj, () => {
-        console.log("Closing Database Connection");
-        db.close();
+    if(arplogger_config.localMongo_enabled) {
+      var insertDocument = (db, doc, callback) => {
+        console.log("Inserting document");
+        var collection = db.collection('arp_reports');
+        collection.insert(doc, (err, result) => {
+          console.log("Document Inserted");
+          callback(result);
+        });
+      };
+    
+      var url = 'mongodb://localhost:27017/arplogger';
+      console.log("Connecting to Database");
+      MongoClient.connect(url, (err, db) => {
+        console.log("Connected to Database");
+        insertDocument(db, obj, () => {
+          console.log("Closing Database Connection");
+          db.close();
+        });
       });
-    });
-  }
-
-  if(arplogger_config.remoteServer_enabled) {
-    let options = {
-      method: 'POST',
-      uri: arplogger_config.remoteServer_url,
-      body: obj,
-      json: true // Automatically stringifies the body to JSON
-    };
+    }
   
-    rp(options)
-      .then(function (parsedBody) {
-        console.log('posted to remote server');
-      })
-      .catch(function (err) {
-        console.log('failed to post to remote server', err.message, err.stack);
-      });
-  }
-
-  // right now log the object to the console
-  // ultimately append it to a file or something
-  console.log(obj);
-
-  // activeclients is an object with
-  // keys that are mac addesses and
-  // values that are ip addresses
-});
+    if(arplogger_config.remoteServer_enabled) {
+      let options = {
+        method: 'POST',
+        uri: arplogger_config.remoteServer_url,
+        body: obj,
+        json: true // Automatically stringifies the body to JSON
+      };
+    
+      rp(options)
+        .then(function (parsedBody) {
+          console.log('posted to remote server');
+        })
+        .catch(function (err) {
+          console.log('failed to post to remote server', err.message, err.stack);
+        });
+    }
+  
+    // right now log the object to the console
+    // ultimately append it to a file or something
+    console.log(obj);
+  
+    // activeclients is an object with
+    // keys that are mac addesses and
+    // values that are ip addresses
+  });
+  
+}
 
 module.exports = app;
