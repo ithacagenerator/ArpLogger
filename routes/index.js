@@ -129,6 +129,8 @@ if(arplogger_config.serverRoutes_enabled) {
         });
       });    
     }
+
+    res.json({status:  'ok'});
   });
 }
 
