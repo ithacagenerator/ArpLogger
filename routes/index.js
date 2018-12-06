@@ -11,6 +11,14 @@ console.log(arplogger_config);
 if(arplogger_config.serverRoutes_enabled) {
   console.log('hosting routes');
 
+  var findLatest = (db) => {
+    var collection = db.collection('arp_reports');
+
+    return Promise.try(() => {
+      return collection.find().limit(1).sort({$natural:-1}).toArrayAsync();
+    });
+  };
+
   var findDocuments = (db, earliestDate, latestDate) => {
     var collection = db.collection('arp_reports');
     var earlyquery = {timestamp: {$gt: earliestDate}};
@@ -49,7 +57,8 @@ if(arplogger_config.serverRoutes_enabled) {
     var uniqueMACs_3mo  = 0;
     var uniqueMACs_6mo  = 0;
     var uniqueMACs_1yr  = 0;
-
+    var uniqueMACs_mostRecent = 0;
+    
     var earliest = req.query.earliest;
     var latest = req.query.latest; 
     var resultSet = [];
@@ -60,6 +69,10 @@ if(arplogger_config.serverRoutes_enabled) {
       let theDb = db;
       console.log("connected");
       return Promise.try(() => {
+        return findLatest(theDb);
+      }).then((docs) => {
+        uniqueMACs_mostRecent = countUniqueMACs(docs);     
+      }).then(() => {
         return findDocuments(theDb, moment().subtract(1, "hour").format());      
       }).then((docs) => {
         uniqueMACs_1hr = countUniqueMACs(docs);     
@@ -101,7 +114,7 @@ if(arplogger_config.serverRoutes_enabled) {
         db.close();
       });
     }).then(() => {
-      res.render('index', { title: 'Arp Logger', uniqueMACs_1hr, uniqueMACs_1day, uniqueMACs_1wk, uniqueMACs_1mo, uniqueMACs_3mo, uniqueMACs_6mo, uniqueMACs_1yr, resultSet });
+      res.render('index', { title: 'Arp Logger', uniqueMACs_mostRecent, uniqueMACs_1hr, uniqueMACs_1day, uniqueMACs_1wk, uniqueMACs_1mo, uniqueMACs_3mo, uniqueMACs_6mo, uniqueMACs_1yr, resultSet });
     }).catch((error) => {
       res.json({stack: error.stack, message: error.message});
     });
